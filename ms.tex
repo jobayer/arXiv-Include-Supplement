@@ -1,0 +1,56 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage{xr}
+\usepackage{pdfpages} % include pdfs
+\usepackage{pgffor} % for loops
+
+\makeatletter
+\newcommand*{\addFileDependency}[1]{
+  \typeout{(#1)}
+  \@addtofilelist{#1}
+  \IfFileExists{#1}{}{\typeout{No file #1.}}
+}
+\makeatother
+
+\newcommand*{\myexternaldocument}[1]{%
+    \externaldocument{#1}%
+    \addFileDependency{#1.tex}%
+    \addFileDependency{#1.aux}%
+}
+
+\myexternaldocument{supp}
+
+% Fix for a pdfpages rotation bug with revtex
+\makeatletter
+\AtBeginDocument{\let\LS@rot\@undefined}
+\makeatother
+
+% the name of the supplement PDF file
+\def\supplementfilename{supp.pdf}
+
+% Determine the number of pages 
+% in the supplement file and store
+\pdfximage{\supplementfilename}
+\def\numbersupplementpages{\the\pdflastximagepages}
+
+\newif\ifarXiv
+\arXivtrue 
+
+\begin{document}
+
+\section{Dummy Section}
+
+This is a dummy section.
+
+\printbibliography
+
+\clearpage
+
+\ifarXiv
+    \foreach \x in {1,...,\numbersupplementpages}
+    {
+        \includepdf[pages={\x}, fitpaper=true]{\supplementfilename}
+    }
+\fi
+
+\end{document}
